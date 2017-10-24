@@ -276,7 +276,8 @@ pmem_drain(void)
 {
 	LOG(15, NULL);
 
-	Func_predrain_fence();
+//	Func_predrain_fence();
+	predrain_fence_sfence();
 
 	VALGRIND_DO_COMMIT;
 	VALGRIND_DO_FENCE;
@@ -371,7 +372,8 @@ pmem_flush(const void *addr, size_t len)
 
 	VALGRIND_DO_CHECK_MEM_IS_ADDRESSABLE(addr, len);
 
-	Func_flush(addr, len);
+//	Func_flush(addr, len);
+	flush_empty(addr, len);
 }
 
 /*
@@ -393,8 +395,17 @@ pmem_persist(const void *addr, size_t len)
  * still works) but it also works for any memory mapped file, unlike
  * pmem_persist() which is only safe where pmem_is_pmem() returns true.
  */
+
 int
-pmem_msync(const void *addr, size_t len)
+pmem_msync(const void *addr, size_t len) {
+    pmem_persist(addr, len);
+    return 0;
+}
+
+int
+pmem_msync_i(const void *addr, size_t len);
+int
+pmem_msync_i(const void *addr, size_t len)
 {
 	LOG(15, "addr %p len %zu", addr, len);
 
